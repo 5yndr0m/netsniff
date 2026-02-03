@@ -1,6 +1,10 @@
+import os
 import socket
 import struct
 import textwrap
+import time
+
+import pandas as pd
 
 # Helper tabs
 TAB_1 = "\t - "
@@ -12,6 +16,9 @@ DATA_TAB_1 = "\t "
 DATA_TAB_2 = "\t\t "
 DATA_TAB_3 = "\t\t\t "
 DATA_TAB_4 = "\t\t\t\t "
+
+capture_data_buffer = []
+BUFFER_LIMIT = 50
 
 
 # Return formatted MAC address (output -> XX:XX:XX:XX:XX:XX)
@@ -105,100 +112,167 @@ def format_multi_line(prefix, string, size=80):
 
 
 def main():
+    print("Starting Sniffer...")
     conn = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
 
-    # Infinite loop to keep sniffing packets
-    while True:
-        raw_data, addr = conn.recvfrom(65536)
-        dest_mac, src_mac, eth_proto, data = ethernet_frame_unpack(raw_data)
-        print("\nEthernet Frame:")
-        print(
-            TAB_1
-            + "Destination: {}, Source: {}, Protocol: {}".format(
-                dest_mac, src_mac, eth_proto
+    try:
+        print("Sniffer Started...")
+        # Infinite loop to keep sniffing packets
+        while True:
+            raw_data, addr = conn.recvfrom(65536)
+            dest_mac, src_mac, eth_proto, data = ethernet_frame_unpack(raw_data)
+
+            packet_data = {
+                "timestamp": time.time(),
+                "dest_mac": dest_mac,
+                "src_mac": src_mac,
+                "eth_proto": eth_proto,
+            }
+
+            # print("\nEthernet Frame:")
+            # print(
+            #     TAB_1
+            #     + "Destination: {}, Source: {}, Protocol: {}".format(
+            #         dest_mac, src_mac, eth_proto
+            #     )
+            # )
+
+            # IPv4 == 8
+            if eth_proto == 8:
+                (version, header_length, ttl, proto, src, target, data) = (
+                    ipv4_packet_unpack(data)
+                )
+
+                packet_data["ip_version"] = version
+                packet_data["ip_header_length"] = header_length
+                packet_data["ip_ttl"] = ttl
+                packet_data["ip_protocol"] = proto
+                packet_data["ip_src_addr"] = src
+                packet_data["ip_target_addr"] = target
+
+                # print(TAB_1 + "IPv4 Packet:")
+                # print(
+                #     TAB_2
+                #     + "Version: {}, Header Length: {}, TTL: {}".format(
+                #         version, header_length, ttl
+                #     )
+                # )
+                # print(
+                #     TAB_2
+                #     + "Protocol: {}, Source: {}, Target: {}".format(proto, src, target)
+                # )
+
+                # ICMP
+                if proto == 1:
+                    icmp_type, code, checksum, data = icmp_packet_unpack(data)
+
+                    packet_data["icmp_type"] = icmp_type
+                    packet_data["icmp_code"] = code
+                    packet_data["icmp_checksum"] = checksum
+
+                    # print(TAB_1 + "ICMP Packet:")
+                    # print(
+                    #     TAB_2
+                    #     + "Type: {}, Code: {}, Checksum: {}".format(
+                    #         icmp_type, code, checksum
+                    #     )
+                    # )
+                    # print(TAB_2 + "Data: ")
+                    # print(format_multi_line(DATA_TAB_3, data))
+
+                # TCP
+                elif proto == 6:
+                    (
+                        src_port,
+                        dest_port,
+                        sequence,
+                        acknowledgment,
+                        offset,
+                        flag_urg,
+                        flag_ack,
+                        flag_psh,
+                        flag_rst,
+                        flag_syn,
+                        flag_fin,
+                        data,
+                    ) = tcp_segment(data)
+
+                    packet_data["tcp_src_port"] = src_port
+                    packet_data["tcp_dest_port"] = dest_port
+                    packet_data["tcp_sequence"] = sequence
+                    packet_data["tcp_acknowledgment"] = acknowledgment
+                    packet_data["tcp_offset"] = offset
+                    packet_data["tcp_flag_urg"] = flag_urg
+                    packet_data["tcp_flag_ack"] = flag_ack
+                    packet_data["tcp_flag_psh"] = flag_psh
+                    packet_data["tcp_flag_rst"] = flag_rst
+                    packet_data["tcp_flag_syn"] = flag_syn
+                    packet_data["tcp_flag_fin"] = flag_fin
+
+                    # print(TAB_1 + "TCP Segment:")
+                    # print(
+                    #     TAB_2
+                    #     + "Source Port: {}, Destination Port: {}".format(
+                    #         src_port, dest_port
+                    #     )
+                    # )
+                    # print(
+                    #     TAB_2
+                    #     + "Sequence: {}, Acknowledgment: {}, Offset: {}".format(
+                    #         sequence, acknowledgment, offset
+                    #     )
+                    # )
+                    # print(TAB_2 + "Flags: ")
+                    # print(
+                    #     TAB_2
+                    #     + "URG: {}, ACK: {}, PSH: {}, RST: {}, SYN: {}, FIN: {}".format(
+                    #         flag_urg, flag_ack, flag_psh, flag_rst, flag_syn, flag_fin
+                    #     )
+                    # )
+                    # print(TAB_2 + "Data: ")
+                    # print(format_multi_line(DATA_TAB_3, data))
+
+                # UDP
+                elif proto == 17:
+                    src_port, dest_port, length, data = udp_datagram_unpack(data)
+
+                    packet_data["udp_src_port"] = src_port
+                    packet_data["udp_dest_port"] = dest_port
+                    packet_data["udp_length"] = length
+
+                    # print(TAB_1 + "UDP Segment:")
+                    # print(
+                    #     TAB_2
+                    #     + "Source Port: {}, Destination Port: {}, Length: {}".format(
+                    #         src_port, dest_port, length
+                    #     )
+                    # )
+
+                # Other
+                else:
+                    packet_data["other_proto"] = proto
+                    packet_data["other_data"] = data
+                    # print(TAB_1 + "Data: ")
+                    # print(format_multi_line(DATA_TAB_3, data))
+
+            capture_data_buffer.append(packet_data)
+
+            if len(capture_data_buffer) >= BUFFER_LIMIT:
+                df = pd.DataFrame(capture_data_buffer)
+                df.to_csv(
+                    "capture_data.csv",
+                    mode="a",
+                    index=False,
+                    header=False if not os.path.exists("capture_data.csv") else True,
+                )
+                capture_data_buffer.clear()
+
+    except KeyboardInterrupt:
+        if capture_data_buffer:
+            pd.DataFrame(capture_data_buffer).to_csv(
+                "capture_data.csv", mode="a", index=False, header=False
             )
-        )
-
-        # IPv4 == 8
-        if eth_proto == 8:
-            (version, header_length, ttl, proto, src, target, data) = (
-                ipv4_packet_unpack(data)
-            )
-            print(TAB_1 + "IPv4 Packet:")
-            print(
-                TAB_2
-                + "Version: {}, Header Length: {}, TTL: {}".format(
-                    version, header_length, ttl
-                )
-            )
-            print(
-                TAB_2
-                + "Protocol: {}, Source: {}, Target: {}".format(proto, src, target)
-            )
-
-            if proto == 1:
-                icmp_type, code, checksum, data = icmp_packet_unpack(data)
-                print(TAB_1 + "ICMP Packet:")
-                print(
-                    TAB_2
-                    + "Type: {}, Code: {}, Checksum: {}".format(
-                        icmp_type, code, checksum
-                    )
-                )
-                print(TAB_2 + "Data: ")
-                print(format_multi_line(DATA_TAB_3, data))
-
-            elif proto == 6:
-                (
-                    src_port,
-                    dest_port,
-                    sequence,
-                    acknowledgment,
-                    offset,
-                    flag_urg,
-                    flag_ack,
-                    flag_psh,
-                    flag_rst,
-                    flag_syn,
-                    flag_fin,
-                    data,
-                ) = tcp_segment(data)
-                print(TAB_1 + "TCP Segment:")
-                print(
-                    TAB_2
-                    + "Source Port: {}, Destination Port: {}".format(
-                        src_port, dest_port
-                    )
-                )
-                print(
-                    TAB_2
-                    + "Sequence: {}, Acknowledgment: {}, Offset: {}".format(
-                        sequence, acknowledgment, offset
-                    )
-                )
-                print(TAB_2 + "Flags: ")
-                print(
-                    TAB_2
-                    + "URG: {}, ACK: {}, PSH: {}, RST: {}, SYN: {}, FIN: {}".format(
-                        flag_urg, flag_ack, flag_psh, flag_rst, flag_syn, flag_fin
-                    )
-                )
-                print(TAB_2 + "Data: ")
-                print(format_multi_line(DATA_TAB_3, data))
-
-            elif proto == 17:
-                src_port, dest_port, length, data = udp_datagram_unpack(data)
-                print(TAB_1 + "UDP Segment:")
-                print(
-                    TAB_2
-                    + "Source Port: {}, Destination Port: {}, Length: {}".format(
-                        src_port, dest_port, length
-                    )
-                )
-
-            else:
-                print(TAB_1 + "Data: ")
-                print(format_multi_line(DATA_TAB_3, data))
+            print("\nSniffer Stopped. Remaining data saved.")
 
 
 main()
