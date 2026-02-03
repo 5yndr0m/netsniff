@@ -77,6 +77,12 @@ def tcp_segment(data):
     )
 
 
+# Unpack UDP datagram
+def udp_datagram_unpack(data):
+    src_port, dest_port, size = struct.unpack("! H H 2x H", data[:8])
+    return src_port, dest_port, size, data[8:]
+
+
 def main():
     conn = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
 
