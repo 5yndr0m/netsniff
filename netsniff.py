@@ -156,11 +156,14 @@ def main():
             raw_data, addr = conn.recvfrom(65536)
             dest_mac, src_mac, eth_proto, data = ethernet_frame_unpack(raw_data)
 
-            packet_data = {
-                "dest_mac": dest_mac,
-                "src_mac": src_mac,
-                "eth_proto": eth_proto,
-            }
+            packet_data.update(
+                {
+                    "timestamp": time.time(),
+                    "dest_mac": dest_mac,
+                    "src_mac": src_mac,
+                    "eth_proto": eth_proto,
+                }
+            )
 
             # print("\nEthernet Frame:")
             # print(
@@ -176,12 +179,22 @@ def main():
                     ipv4_packet_unpack(data)
                 )
 
-                packet_data["ip_version"] = version
-                packet_data["ip_header_length"] = header_length
-                packet_data["ip_ttl"] = ttl
-                packet_data["ip_protocol"] = proto
-                packet_data["ip_src_addr"] = src
-                packet_data["ip_target_addr"] = target
+                packet_data.update(
+                    {
+                        "ip_version": version,
+                        "ip_header_length": header_length,
+                        "ip_ttl": ttl,
+                        "ip_protocol": proto,
+                        "ip_src_addr": src,
+                        "ip_target_addr": target,
+                    }
+                )
+                # packet_data["ip_version"] = version
+                # packet_data["ip_header_length"] = header_length
+                # packet_data["ip_ttl"] = ttl
+                # packet_data["ip_protocol"] = proto
+                # packet_data["ip_src_addr"] = src
+                # packet_data["ip_target_addr"] = target
 
                 # print(TAB_1 + "IPv4 Packet:")
                 # print(
@@ -199,9 +212,16 @@ def main():
                 if proto == 1:
                     icmp_type, code, checksum, data = icmp_packet_unpack(data)
 
-                    packet_data["icmp_type"] = icmp_type
-                    packet_data["icmp_code"] = code
-                    packet_data["icmp_checksum"] = checksum
+                    packet_data.update(
+                        {
+                            "icmp_type": icmp_type,
+                            "icmp_code": code,
+                            "icmp_checksum": checksum,
+                        }
+                    )
+                    # packet_data["icmp_type"] = icmp_type
+                    # packet_data["icmp_code"] = code
+                    # packet_data["icmp_checksum"] = checksum
 
                     # print(TAB_1 + "ICMP Packet:")
                     # print(
@@ -230,17 +250,33 @@ def main():
                         data,
                     ) = tcp_segment(data)
 
-                    packet_data["tcp_src_port"] = src_port
-                    packet_data["tcp_dest_port"] = dest_port
-                    packet_data["tcp_sequence"] = sequence
-                    packet_data["tcp_acknowledgment"] = acknowledgment
-                    packet_data["tcp_offset"] = offset
-                    packet_data["tcp_flag_urg"] = flag_urg
-                    packet_data["tcp_flag_ack"] = flag_ack
-                    packet_data["tcp_flag_psh"] = flag_psh
-                    packet_data["tcp_flag_rst"] = flag_rst
-                    packet_data["tcp_flag_syn"] = flag_syn
-                    packet_data["tcp_flag_fin"] = flag_fin
+                    packet_data.update(
+                        {
+                            "tcp_src_port": src_port,
+                            "tcp_dest_port": dest_port,
+                            "tcp_sequence": sequence,
+                            "tcp_acknowledgment": acknowledgment,
+                            "tcp_offset": offset,
+                            "tcp_flag_urg": flag_urg,
+                            "tcp_flag_ack": flag_ack,
+                            "tcp_flag_psh": flag_psh,
+                            "tcp_flag_rst": flag_rst,
+                            "tcp_flag_syn": flag_syn,
+                            "tcp_flag_fin": flag_fin,
+                        }
+                    )
+
+                    # packet_data["tcp_src_port"] = src_port
+                    # packet_data["tcp_dest_port"] = dest_port
+                    # packet_data["tcp_sequence"] = sequence
+                    # packet_data["tcp_acknowledgment"] = acknowledgment
+                    # packet_data["tcp_offset"] = offset
+                    # packet_data["tcp_flag_urg"] = flag_urg
+                    # packet_data["tcp_flag_ack"] = flag_ack
+                    # packet_data["tcp_flag_psh"] = flag_psh
+                    # packet_data["tcp_flag_rst"] = flag_rst
+                    # packet_data["tcp_flag_syn"] = flag_syn
+                    # packet_data["tcp_flag_fin"] = flag_fin
 
                     # print(TAB_1 + "TCP Segment:")
                     # print(
@@ -269,9 +305,17 @@ def main():
                 elif proto == 17:
                     src_port, dest_port, length, data = udp_datagram_unpack(data)
 
-                    packet_data["udp_src_port"] = src_port
-                    packet_data["udp_dest_port"] = dest_port
-                    packet_data["udp_length"] = length
+                    packet_data.update(
+                        {
+                            "udp_src_port": src_port,
+                            "udp_dest_port": dest_port,
+                            "udp_length": length,
+                        }
+                    )
+
+                    # packet_data["udp_src_port"] = src_port
+                    # packet_data["udp_dest_port"] = dest_port
+                    # packet_data["udp_length"] = length
 
                     # print(TAB_1 + "UDP Segment:")
                     # print(
@@ -284,7 +328,7 @@ def main():
                 # Other
                 else:
                     packet_data["other_proto"] = proto
-                    packet_data["other_data"] = data
+                    packet_data["other_data"] = data.hex()
                     # print(TAB_1 + "Data: ")
                     # print(format_multi_line(DATA_TAB_3, data))
 
