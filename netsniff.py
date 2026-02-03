@@ -263,7 +263,7 @@ def main():
                     "capture_data.csv",
                     mode="a",
                     index=False,
-                    header=False if not os.path.exists("capture_data.csv") else True,
+                    header=True if not os.path.exists("capture_data.csv") else False,
                 )
                 capture_data_buffer.clear()
 
