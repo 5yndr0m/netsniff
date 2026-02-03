@@ -2,6 +2,7 @@ import socket
 import struct
 import textwrap
 
+
 # Unpack ethernet frame
 def ethernet_frame_unpack(data):
     dest_mac, src_mac, eth_proto = struct.unpack("!6s 6s H", data[:14])
@@ -11,5 +12,9 @@ def ethernet_frame_unpack(data):
         socket.htons(eth_proto),  # ethernet protocol
         data[14:],  # payload
     )
-# Return formatted MAC address
-def get_mac_addr():
+
+
+# Return formatted MAC address (output -> XX:XX:XX:XX:XX:XX)
+def get_mac_addr(bytes_addr):
+    bytes_str = map("{:02x}".format, bytes_addr)
+    return ":".join(bytes_str).upper()
