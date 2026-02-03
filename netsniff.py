@@ -42,6 +42,11 @@ def ipv4_format(addr):
     return ".".join(map(str, addr))
 
 
+# Unpack ICMP packet
+def icmp_packet_unpack(data):
+    icmp_type, code, checksum = struct.unpack("! B B H", data[:4])
+    return icmp_type, code, checksum, data[4:]
+
 def main():
     conn = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
 
