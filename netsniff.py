@@ -1,14 +1,15 @@
-def parseInput(data):
-    # Parse the input and returns the ip address
-    parsed_data = data.split(".")
-    if len(parsed_data) != 4:
-        raise ValueError("Invalid IP Address")
-    for octet in parsed_data:
-        if not octet.isdigit() or int(octet) < 0 or int(octet) > 255:
-            raise ValueError("Invalid IP Address")
-    return data
+import socket
+import struct
+import textwrap
 
-
-print("Enter Target IP Address: ")
-ip = parseInput(input())
-print("Entered IP Address:", ip)
+# Unpack ethernet frame
+def ethernet_frame_unpack(data):
+    dest_mac, src_mac, eth_proto = struct.unpack("!6s 6s H", data[:14])
+    return (
+        get_mac_addr(dest_mac),  # destination mac address
+        get_mac_addr(src_mac),  # source mac address
+        socket.htons(eth_proto),  # ethernet protocol
+        data[14:],  # payload
+    )
+# Return formatted MAC address
+def get_mac_addr():
