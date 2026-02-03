@@ -47,6 +47,7 @@ def icmp_packet_unpack(data):
     icmp_type, code, checksum = struct.unpack("! B B H", data[:4])
     return icmp_type, code, checksum, data[4:]
 
+
 # Unpack TCP packet
 def tcp_segment(data):
     (src_port, dest_port, sequence, acknowledgement, offset_reserved_flags) = (
@@ -59,6 +60,22 @@ def tcp_segment(data):
     flag_rst = (offset_reserved_flags & 4) >> 2
     flag_syn = (offset_reserved_flags & 2) >> 1
     flag_fin = offset_reserved_flags & 1
+
+    return (
+        src_port,
+        dest_port,
+        sequence,
+        acknowledgement,
+        offset,
+        flag_urg,
+        flag_ack,
+        flag_psh,
+        flag_rst,
+        flag_syn,
+        flag_fin,
+        data[offset:],
+    )
+
 
 def main():
     conn = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
