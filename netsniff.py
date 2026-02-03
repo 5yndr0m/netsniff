@@ -346,11 +346,11 @@ def main():
 
     except KeyboardInterrupt:
         if capture_data_buffer:
-            conn.close()
             pd.DataFrame(capture_data_buffer).to_csv(
                 "capture_data.csv", mode="a", index=False, header=False
             )
             print("\nSniffer Stopped. Remaining data saved.")
+        conn.close()
 
 
 main()
