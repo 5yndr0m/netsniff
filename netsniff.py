@@ -113,7 +113,8 @@ def main():
         dest_mac, src_mac, eth_proto, data = ethernet_frame_unpack(raw_data)
         print("\nEthernet Frame:")
         print(
-            "Destination: {}, Source: {}, Protocol: {}".format(
+            TAB_1
+            + "Destination: {}, Source: {}, Protocol: {}".format(
                 dest_mac, src_mac, eth_proto
             )
         )
