@@ -20,6 +20,38 @@ DATA_TAB_4 = "\t\t\t\t "
 capture_data_buffer = []
 BUFFER_LIMIT = 50
 
+base_fields = {
+    "timestamp": time.time(),
+    "dest_mac": None,
+    "src_mac": None,
+    "eth_proto": None,
+    "ip_version": None,
+    "ip_header_length": None,
+    "ip_ttl": None,
+    "ip_protocol": None,
+    "ip_src_addr": None,
+    "ip_target_addr": None,
+    "icmp_type": None,
+    "icmp_code": None,
+    "icmp_checksum": None,
+    "tcp_src_port": None,
+    "tcp_dest_port": None,
+    "tcp_sequence": None,
+    "tcp_acknowledgment": None,
+    "tcp_offset": None,
+    "tcp_flag_urg": None,
+    "tcp_flag_ack": None,
+    "tcp_flag_psh": None,
+    "tcp_flag_rst": None,
+    "tcp_flag_syn": None,
+    "tcp_flag_fin": None,
+    "udp_src_port": None,
+    "udp_dest_port": None,
+    "udp_length": None,
+    "other_proto": None,
+    "other_data": None,
+}
+
 
 # Return formatted MAC address (output -> XX:XX:XX:XX:XX:XX)
 def get_mac_addr(bytes_addr):
@@ -117,13 +149,14 @@ def main():
 
     try:
         print("Sniffer Started...")
+
         # Infinite loop to keep sniffing packets
         while True:
+            packet_data = base_fields.copy()
             raw_data, addr = conn.recvfrom(65536)
             dest_mac, src_mac, eth_proto, data = ethernet_frame_unpack(raw_data)
 
             packet_data = {
-                "timestamp": time.time(),
                 "dest_mac": dest_mac,
                 "src_mac": src_mac,
                 "eth_proto": eth_proto,
@@ -269,6 +302,7 @@ def main():
 
     except KeyboardInterrupt:
         if capture_data_buffer:
+            conn.close()
             pd.DataFrame(capture_data_buffer).to_csv(
                 "capture_data.csv", mode="a", index=False, header=False
             )
