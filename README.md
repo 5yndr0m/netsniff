@@ -26,9 +26,9 @@ This is the first thing NetSniff sees. Every piece of data on a local network is
 - **MAC Addresses:** Source and Destination hardware IDs.
 - **EtherType:** A field that tells the sniffer what is inside the frame (e.g., `0x0800` and `8` for IPv4 or `0x0806` and `2054` for ARP).
 
-> You can Learn more about numbers from **Internet Assigned Numbers Authority (IANA)**
-> [protocol numbers](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)
-> [IEEE 802 Numbers](https://www.iana.org/assignments/ieee-802-numbers/ieee-802-numbers.xhtml)
+> You can Learn more about numbers from **Internet Assigned Numbers Authority (IANA)**<br/>
+> [protocol numbers](https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)<br/>
+> [IEEE 802 Numbers](https://www.iana.org/assignments/ieee-802-numbers/ieee-802-numbers.xhtml)<br/>
 
 ### Layer 3: The Network Layer (IP & ARP)
 
