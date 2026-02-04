@@ -144,6 +144,26 @@ def format_multi_line(prefix, string, size=80):
     return "\n".join([prefix + line for line in textwrap.wrap(string, size)])
 
 
+# Unpack ARP packet
+def arp_packet_unpack(data):
+    hw_type, proto_type, hw_len, proto_len, opcode = struct.unpack(
+        "! H H B B H", data[:28]
+    )
+    src_mac, src_ip = struct.unpack("! 6s 4s", data[28:44])
+    dest_mac, dest_ip = struct.unpack("! 6s 4s", data[44:60])
+    return (
+        hw_type,
+        proto_type,
+        hw_len,
+        proto_len,
+        opcode,
+        src_mac,
+        src_ip,
+        dest_mac,
+        dest_ip,
+    )
+
+
 def main():
     print("Starting Sniffer...")
     conn = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
@@ -326,6 +346,40 @@ def main():
                     if verbose:
                         print(TAB_1 + "Data: ")
                         print(format_multi_line(DATA_TAB_3, data))
+
+            elif eth_proto == 2054:
+                # ARP
+                (
+                    hw_type,
+                    proto_type,
+                    hw_len,
+                    proto_len,
+                    opcode,
+                    src_mac,
+                    src_ip,
+                    dest_mac,
+                    dest_ip,
+                ) = arp_packet_unpack(data)
+                packet_data["arp_hw_type"] = hw_type
+                packet_data["arp_proto_type"] = proto_type
+                packet_data["arp_hw_len"] = hw_len
+                packet_data["arp_proto_len"] = proto_len
+                packet_data["arp_opcode"] = opcode
+                packet_data["arp_src_mac"] = src_mac
+                packet_data["arp_src_ip"] = src_ip
+                packet_data["arp_dest_mac"] = dest_mac
+                packet_data["arp_dest_ip"] = dest_ip
+
+                print("ARP Packet")
+                print(f"Hardware Type: {hw_type}")
+                print(f"Protocol Type: {proto_type}")
+                print(f"Hardware Length: {hw_len}")
+                print(f"Protocol Length: {proto_len}")
+                print(f"Opcode: {opcode}")
+                print(f"Source MAC: {src_mac}")
+                print(f"Source IP: {src_ip}")
+                print(f"Destination MAC: {dest_mac}")
+                print(f"Destination IP: {dest_ip}")
 
             capture_data_buffer.append(packet_data)
 
