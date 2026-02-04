@@ -51,6 +51,15 @@ base_fields = {
     "udp_length": None,
     "other_proto": None,
     "other_data": None,
+    "arp_hw_type": None,
+    "arp_proto_type": None,
+    "arp_hw_len": None,
+    "arp_proto_len": None,
+    "arp_opcode": None,
+    "arp_src_mac": None,
+    "arp_src_ip": None,
+    "arp_dest_mac": None,
+    "arp_dest_ip": None,
 }
 
 
@@ -157,10 +166,10 @@ def arp_packet_unpack(data):
         hw_len,
         proto_len,
         opcode,
-        src_mac,
-        src_ip,
-        dest_mac,
-        dest_ip,
+        get_mac_addr(src_mac),
+        ipv4_format(src_ip),
+        get_mac_addr(dest_mac),
+        ipv4_format(dest_ip),
     )
 
 
@@ -360,26 +369,32 @@ def main():
                     dest_mac,
                     dest_ip,
                 ) = arp_packet_unpack(data)
-                packet_data["arp_hw_type"] = hw_type
-                packet_data["arp_proto_type"] = proto_type
-                packet_data["arp_hw_len"] = hw_len
-                packet_data["arp_proto_len"] = proto_len
-                packet_data["arp_opcode"] = opcode
-                packet_data["arp_src_mac"] = src_mac
-                packet_data["arp_src_ip"] = src_ip
-                packet_data["arp_dest_mac"] = dest_mac
-                packet_data["arp_dest_ip"] = dest_ip
 
-                print("ARP Packet")
-                print(f"Hardware Type: {hw_type}")
-                print(f"Protocol Type: {proto_type}")
-                print(f"Hardware Length: {hw_len}")
-                print(f"Protocol Length: {proto_len}")
-                print(f"Opcode: {opcode}")
-                print(f"Source MAC: {src_mac}")
-                print(f"Source IP: {src_ip}")
-                print(f"Destination MAC: {dest_mac}")
-                print(f"Destination IP: {dest_ip}")
+                packet_data.update(
+                    {
+                        "arp_hw_type": hw_type,
+                        "arp_proto_type": proto_type,
+                        "arp_hw_len": hw_len,
+                        "arp_proto_len": proto_len,
+                        "arp_opcode": opcode,
+                        "arp_src_mac": src_mac,
+                        "arp_src_ip": src_ip,
+                        "arp_dest_mac": dest_mac,
+                        "arp_dest_ip": dest_ip,
+                    }
+                )
+
+                if verbose:
+                    print("ARP Packet")
+                    print(f"Hardware Type: {hw_type}")
+                    print(f"Protocol Type: {proto_type}")
+                    print(f"Hardware Length: {hw_len}")
+                    print(f"Protocol Length: {proto_len}")
+                    print(f"Opcode: {opcode}")
+                    print(f"Source MAC: {src_mac}")
+                    print(f"Source IP: {src_ip}")
+                    print(f"Destination MAC: {dest_mac}")
+                    print(f"Destination IP: {dest_ip}")
 
             capture_data_buffer.append(packet_data)
 
