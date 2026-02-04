@@ -1,5 +1,7 @@
-scapy
-python-nmap
-ipaddress
-requests
-matplotlib
+pandas
+struct
+socket
+textwrap
+os
+time
+sys
