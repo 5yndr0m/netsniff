@@ -399,6 +399,8 @@ def main():
             capture_data_buffer.append(packet_data)
 
             if len(capture_data_buffer) >= BUFFER_LIMIT:
+                if verbose:
+                    print("Saving captured data to CSV...")
                 df = pd.DataFrame(capture_data_buffer)
                 df.to_csv(
                     "capture_data.csv",
@@ -406,10 +408,14 @@ def main():
                     index=False,
                     header=True if not os.path.exists("capture_data.csv") else False,
                 )
+                if verbose:
+                    print("Data saved.")
                 capture_data_buffer.clear()
 
     except KeyboardInterrupt:
         if capture_data_buffer:
+            if verbose:
+                print("Saving captured data to CSV...")
             pd.DataFrame(capture_data_buffer).to_csv(
                 "capture_data.csv", mode="a", index=False, header=False
             )
