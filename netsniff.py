@@ -146,6 +146,7 @@ def format_multi_line(prefix, string, size=80):
 def main():
     print("Starting Sniffer...")
     conn = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
+    verbose = False
 
     try:
         print("Sniffer Started...")
@@ -165,13 +166,14 @@ def main():
                 }
             )
 
-            # print("\nEthernet Frame:")
-            # print(
-            #     TAB_1
-            #     + "Destination: {}, Source: {}, Protocol: {}".format(
-            #         dest_mac, src_mac, eth_proto
-            #     )
-            # )
+            if verbose:
+                print("\nEthernet Frame:")
+                print(
+                    TAB_1
+                    + "Destination: {}, Source: {}, Protocol: {}".format(
+                        dest_mac, src_mac, eth_proto
+                    )
+                )
 
             # IPv4 == 8
             if eth_proto == 8:
@@ -189,24 +191,21 @@ def main():
                         "ip_target_addr": target,
                     }
                 )
-                # packet_data["ip_version"] = version
-                # packet_data["ip_header_length"] = header_length
-                # packet_data["ip_ttl"] = ttl
-                # packet_data["ip_protocol"] = proto
-                # packet_data["ip_src_addr"] = src
-                # packet_data["ip_target_addr"] = target
 
-                # print(TAB_1 + "IPv4 Packet:")
-                # print(
-                #     TAB_2
-                #     + "Version: {}, Header Length: {}, TTL: {}".format(
-                #         version, header_length, ttl
-                #     )
-                # )
-                # print(
-                #     TAB_2
-                #     + "Protocol: {}, Source: {}, Target: {}".format(proto, src, target)
-                # )
+                if verbose:
+                    print(TAB_1 + "IPv4 Packet:")
+                    print(
+                        TAB_2
+                        + "Version: {}, Header Length: {}, TTL: {}".format(
+                            version, header_length, ttl
+                        )
+                    )
+                    print(
+                        TAB_2
+                        + "Protocol: {}, Source: {}, Target: {}".format(
+                            proto, src, target
+                        )
+                    )
 
                 # ICMP
                 if proto == 1:
@@ -219,19 +218,17 @@ def main():
                             "icmp_checksum": checksum,
                         }
                     )
-                    # packet_data["icmp_type"] = icmp_type
-                    # packet_data["icmp_code"] = code
-                    # packet_data["icmp_checksum"] = checksum
 
-                    # print(TAB_1 + "ICMP Packet:")
-                    # print(
-                    #     TAB_2
-                    #     + "Type: {}, Code: {}, Checksum: {}".format(
-                    #         icmp_type, code, checksum
-                    #     )
-                    # )
-                    # print(TAB_2 + "Data: ")
-                    # print(format_multi_line(DATA_TAB_3, data))
+                    if verbose:
+                        print(TAB_1 + "ICMP Packet:")
+                        print(
+                            TAB_2
+                            + "Type: {}, Code: {}, Checksum: {}".format(
+                                icmp_type, code, checksum
+                            )
+                        )
+                        print(TAB_2 + "Data: ")
+                        print(format_multi_line(DATA_TAB_3, data))
 
                 # TCP
                 elif proto == 6:
@@ -266,40 +263,34 @@ def main():
                         }
                     )
 
-                    # packet_data["tcp_src_port"] = src_port
-                    # packet_data["tcp_dest_port"] = dest_port
-                    # packet_data["tcp_sequence"] = sequence
-                    # packet_data["tcp_acknowledgment"] = acknowledgment
-                    # packet_data["tcp_offset"] = offset
-                    # packet_data["tcp_flag_urg"] = flag_urg
-                    # packet_data["tcp_flag_ack"] = flag_ack
-                    # packet_data["tcp_flag_psh"] = flag_psh
-                    # packet_data["tcp_flag_rst"] = flag_rst
-                    # packet_data["tcp_flag_syn"] = flag_syn
-                    # packet_data["tcp_flag_fin"] = flag_fin
-
-                    # print(TAB_1 + "TCP Segment:")
-                    # print(
-                    #     TAB_2
-                    #     + "Source Port: {}, Destination Port: {}".format(
-                    #         src_port, dest_port
-                    #     )
-                    # )
-                    # print(
-                    #     TAB_2
-                    #     + "Sequence: {}, Acknowledgment: {}, Offset: {}".format(
-                    #         sequence, acknowledgment, offset
-                    #     )
-                    # )
-                    # print(TAB_2 + "Flags: ")
-                    # print(
-                    #     TAB_2
-                    #     + "URG: {}, ACK: {}, PSH: {}, RST: {}, SYN: {}, FIN: {}".format(
-                    #         flag_urg, flag_ack, flag_psh, flag_rst, flag_syn, flag_fin
-                    #     )
-                    # )
-                    # print(TAB_2 + "Data: ")
-                    # print(format_multi_line(DATA_TAB_3, data))
+                    if verbose:
+                        print(TAB_1 + "TCP Segment:")
+                        print(
+                            TAB_2
+                            + "Source Port: {}, Destination Port: {}".format(
+                                src_port, dest_port
+                            )
+                        )
+                        print(
+                            TAB_2
+                            + "Sequence: {}, Acknowledgment: {}, Offset: {}".format(
+                                sequence, acknowledgment, offset
+                            )
+                        )
+                        print(TAB_2 + "Flags: ")
+                        print(
+                            TAB_2
+                            + "URG: {}, ACK: {}, PSH: {}, RST: {}, SYN: {}, FIN: {}".format(
+                                flag_urg,
+                                flag_ack,
+                                flag_psh,
+                                flag_rst,
+                                flag_syn,
+                                flag_fin,
+                            )
+                        )
+                        print(TAB_2 + "Data: ")
+                        print(format_multi_line(DATA_TAB_3, data))
 
                 # UDP
                 elif proto == 17:
@@ -313,24 +304,23 @@ def main():
                         }
                     )
 
-                    # packet_data["udp_src_port"] = src_port
-                    # packet_data["udp_dest_port"] = dest_port
-                    # packet_data["udp_length"] = length
-
-                    # print(TAB_1 + "UDP Segment:")
-                    # print(
-                    #     TAB_2
-                    #     + "Source Port: {}, Destination Port: {}, Length: {}".format(
-                    #         src_port, dest_port, length
-                    #     )
-                    # )
+                    if verbose:
+                        print(TAB_1 + "UDP Segment:")
+                        print(
+                            TAB_2
+                            + "Source Port: {}, Destination Port: {}, Length: {}".format(
+                                src_port, dest_port, length
+                            )
+                        )
 
                 # Other
                 else:
                     packet_data["other_proto"] = proto
                     packet_data["other_data"] = data.hex()
-                    # print(TAB_1 + "Data: ")
-                    # print(format_multi_line(DATA_TAB_3, data))
+
+                    if verbose:
+                        print(TAB_1 + "Data: ")
+                        print(format_multi_line(DATA_TAB_3, data))
 
             capture_data_buffer.append(packet_data)
 
