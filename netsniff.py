@@ -1,6 +1,7 @@
 import os
 import socket
 import struct
+import sys
 import textwrap
 import time
 
@@ -146,7 +147,11 @@ def format_multi_line(prefix, string, size=80):
 def main():
     print("Starting Sniffer...")
     conn = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
+
     verbose = False
+    args = sys.argv[1:]
+    if "--verbose" in args:
+        verbose = True
 
     try:
         print("Sniffer Started...")
