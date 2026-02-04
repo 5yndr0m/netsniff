@@ -75,6 +75,7 @@ To prevent the script from slowing down the system (I/O bottleneck), NetSniff us
 - `python -m venv venv`
 - install requirements (Most are already in your venv)
 - run using `sudo ./venv/bin/python netsniff.py`
+- run with verbose `sudo ./venv/bin/python netsniff.py --verbose`
 - `Ctrl + C` to stop
 - in the same directory a `capture_data.csv` will be created.
 
